@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MedBot - Chatbot</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #chat-container {
+            width: 400px;
+            background-color: #fff;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #header {
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 20px;
+        }
+        #chat {
+            list-style-type: none;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            background-color: #e9e9e9;
+        }
+        #chat li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #chat li.bot {
+            background-color: #f1f1f1;
+            text-align: left;
+        }
+        #chat li.user {
+            background-color: #d1eaff;
+            text-align: right;
+        }
+        form {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #5cb85c;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken');
+
+            $('form').submit(function(event){
+                event.preventDefault();
+                var message = $('#message').val();
+                $.ajax({
+                    url: '/chat/',
+                    type: 'POST',
+                    headers: {'X-CSRFToken': csrftoken},
+                    data: JSON.stringify({'message': message}),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(data){
+                        $('#chat').append('<li class="user">You: ' + message + '</li>');
+                        $('#chat').append('<li class="bot">Bot: ' + data.response + '</li>');
+                        $('#message').val(''); // Clear the input box
+                        $('#chat').scrollTop($('#chat')[0].scrollHeight); // Auto scroll to the bottom
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="header">MedBot</div>
+        <ul id="chat"></ul> <!-- Messages will be displayed here -->
+        <form>
+            <input type="text" id="message" placeholder="Type your message here...">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+</body>
+</html>
